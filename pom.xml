@@ -114,7 +114,7 @@
     <jansi.version>1.9</jansi.version>
     <junit.version>4.11</junit.version>
   </properties>
-  
+
   <dependencies>
     <dependency>
       <groupId>com.software-ninja</groupId>
@@ -164,6 +164,8 @@
               <arguments>
                 <argument>-Q</argument>
                 <argument>--batch</argument>
+		<argument>-L</argument>
+		<argument>src/test/lisp</argument>
                 <argument>-l</argument>
                 <argument>src/test/lisp/init.el</argument>
                 <argument>-l</argument>
@@ -182,6 +184,8 @@
               <arguments>
                 <argument>-Q</argument>
                 <argument>--batch</argument>
+		<argument>-L</argument>
+		<argument>src/test/lisp</argument>
                 <argument>-l</argument>
                 <argument>src/test/lisp/init.el</argument>
                 <argument>-l</argument>
@@ -233,6 +237,5 @@
       </plugin>
     </plugins>
   </reporting>
-  
-</project>
 
+</project>
