@@ -96,7 +96,7 @@
 (defun malabar-ede-maven-project-compile-project (proj command)
   (apply #'malabar-ede-maven-execute 
 	 (ede-project-root-directory proj)
-	 (or command (oref proj :current-target))
+	 (or command (oref proj :current-targets))
 	 (oref proj :target-options)))
 
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -181,7 +181,7 @@
 					  :name "Malabar maven dir" ; TODO: make fancy name from dir here.
 					  :directory dir
 					  :file (expand-file-name "pom.xml" dir)
-					  :current-target (first target-names)
+					  :current-targets target-names
 					  :classpath (malabar-maven2-extract-classpath (expand-file-name "pom.xml" dir)))))
 	 (oset this targets 
 	       (mapcar (lambda (n) (malabar-maven2-create-target n dir this)) target-names))
