@@ -1,4 +1,3 @@
-;; -*- lexical-binding: t -*-
 ;;; malabar-abbrevs.el --- A better Java mode for Emacs
 ;;
 ;; Copyright (c) 2009, 2010 Espen Wiborg <espenhw@grumblesmurf.org>
@@ -20,9 +19,7 @@
 ;;
 
 (require 'skeleton)
-(require 'cc-mode)
-(eval-when-compile 
-  (require 'cl))
+(require 'cl)
 (require 'malabar-variables)
 
 (defun malabar-abbrevs-delete-abbrev ()
@@ -65,20 +62,16 @@
   "\\(?:^\\|\\s-\\)\\(#?\\w+\\)\\W*"
   "The regexp to recognize abbrevs.  Group one is used for abbrev
 lookup."
-  :group 'malabar
+  :group 'malabar-mode
   :type 'regexp)
   
-
-
 (defun malabar-abbrevs-setup ()
-  (abbrev-table-put java-mode-abbrev-table :regexp malabar-abbrevs-abbrev-regexp)
+  (abbrev-table-put malabar-mode-abbrev-table :regexp malabar-abbrevs-abbrev-regexp)
   (mapc (lambda (abbr)
-          (define-abbrev java-mode-abbrev-table (first abbr) (second abbr)
+          (define-abbrev malabar-mode-abbrev-table (first abbr) (second abbr)
             (unless (stringp (second abbr))
               (second abbr))
             :case-fixed t :system 'force))
         malabar-case-fixed-abbrevs))
 
 (provide 'malabar-abbrevs)
-
-;;; malabar-abbrevs ends here

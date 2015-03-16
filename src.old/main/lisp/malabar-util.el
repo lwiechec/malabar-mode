@@ -18,33 +18,42 @@
 ;; 02110-1301 USA.
 ;;
 (require 'cl)
-;(require 'semantic)
+(require 'semantic)
 
 
-;; (defun malabar-util-expand-file-name (f &optional DEFAULT-DIRECTORY)
-;;   (let ((rtnval (funcall malabar-util-path-filter 
-;; 			 (expand-file-name f DEFAULT-DIRECTORY))))
-;;    ;; (message "malabar-util-expand-file-name: %s" rtnval)
-;;     rtnval))
+(defun malabar-util-expand-file-name (f &optional DEFAULT-DIRECTORY)
+  (let ((rtnval (funcall malabar-util-path-filter 
+			 (expand-file-name f DEFAULT-DIRECTORY))))
+   ;; (message "malabar-util-expand-file-name: %s" rtnval)
+    rtnval))
 
-;; (defun malabar-util-expand-file-name-nth (fs n &optional DEFAULT-DIRECTORY)
-;;   "Expand a filename.  FS is a list and the filename to expand is the N element."
-;;   (malabar-util-expand-file-name (nth n fs) DEFAULT-DIRECTORY))
+(defun malabar-util-expand-file-name-nth (fs n &optional DEFAULT-DIRECTORY)
+  "Expand a filename.  FS is a list and the filename to expand is the N element."
+  (malabar-util-expand-file-name (nth n fs) DEFAULT-DIRECTORY))
 
 
-;; (defun malabar-util-groovy-expand-file-name (f &optional DEFAULT-DIRECTORY)
-;;   (let ((rtnval 
-;; 	 (funcall malabar-util-groovy-file-filter
-;; 		  (funcall malabar-util-path-filter 
-;; 			   (expand-file-name f DEFAULT-DIRECTORY)))))
-;;     ;;(message "malabar-util-grooy-expand-file-name: %s" rtnval)
-;;     rtnval))
+(defun malabar-util-groovy-expand-file-name (f &optional DEFAULT-DIRECTORY)
+  (let ((rtnval 
+	 (funcall malabar-util-groovy-file-filter
+		  (funcall malabar-util-path-filter 
+			   (expand-file-name f DEFAULT-DIRECTORY)))))
+    ;;(message "malabar-util-grooy-expand-file-name: %s" rtnval)
+    rtnval))
 
 (defun malabar-util-reverse-slash (f)
   (replace-regexp-in-string "\\\\" "/" f t t))
 
+(defmacro* when-let ((var value) &body body)
+  "Evaluate VALUE, and if the result is non-nil bind it to VAR and
+evaluate BODY.
+
+\(fn (VAR VALUE) &rest BODY)"
+  `(let ((,var ,value))
+     (when ,var ,@body)))
+(put 'when-let 'lisp-indent-function 1)
+
 (defun string-starts-with (string start)
-  (string-prefix-p start string))
+  (string-match-p (concat "^" (regexp-quote start)) string))
 
 (defun string-ends-with (string end)
   (string-match-p (concat (regexp-quote end) "$") string))
@@ -56,14 +65,6 @@
     (when (string-match "[\r\n\t ]+\\'" string)
       (setq string (replace-match "" t t string)))
     string))
-
-(defun malabar-util-right-substring (str len)
-  "Right trim a string to length"
-  (if (> (length str) len)
-      (substring str (- len))
-    str))
-
-
 
 (defun string-delete-whitespace (string) 
   (save-match-data (replace-regexp-in-string "[\r\n\t ]+" "" string t t)))
@@ -146,9 +147,6 @@ return the corresponding cdr."
       classname)))
 
 (defun malabar-class-name-to-filename (class-name &optional suffix)
-  "Take a full CLASS-NAME 'org.apache.log4j.Logger' and return 'org/apache/log4j/LoggerSUFFIX'
-
-  The default SUFFIX is '.java'"
   (concat (replace-regexp-in-string "\\." "/" class-name)
           (or suffix ".java")))
 
@@ -172,11 +170,11 @@ return the corresponding cdr."
   (malabar-get-specific-tag 'type buffer))
 
 (defun malabar-get-package-name (&optional buffer)
-  (-when-let (package-tag (malabar-get-package-tag buffer))
+  (when-let (package-tag (malabar-get-package-tag buffer))
     (semantic-tag-name package-tag)))
 
 (defun malabar-get-class-name (&optional buffer)
-  (-when-let (package-tag (malabar-get-class-tag buffer))
+  (when-let (package-tag (malabar-get-class-tag buffer))
     (semantic-tag-name package-tag)))
 
 (defun malabar-get-fully-qualified-class-name (&optional buffer)
@@ -193,6 +191,10 @@ return the corresponding cdr."
     (kill-new s)
     (message "Copied %s" s)))
 
+(defun malabar-get-class-tag-at-point ()
+  (malabar-semantic-fetch-tags)
+  (or (semantic-current-tag-of-class 'type)
+      (car (semantic-find-tags-by-class 'type (current-buffer)))))
 
 (defun malabar--conditional-replace (regexp replacement start end predicate)
   "Replaces REGEXP with REPLACEMENT from START to END, but only
@@ -231,9 +233,23 @@ gleaned from COMMAND-LINE."
           (nreverse definitions)
           profiles)))
     
+(defun malabar--make-groovy-list (l)
+  (concat "["
+          (mapconcat (lambda (s) (format "'%s'" s))
+                     l
+                     ",")
+          "]"))
+
+(defun malabar--make-groovy-map (l)
+  (if (null l)
+      "[:]"
+    (concat "["
+            (mapconcat (lambda (c) (format "'%s': '%s'" (car c) (cdr c)))
+                       l
+                       ",")
+            "]")))
+
 (provide 'malabar-util)
 ;; Local Variables:
 ;; byte-compile-warnings:(not cl-functions)
 ;; End:
-
-;;; malabar-util ends here
