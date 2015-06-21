@@ -126,7 +126,7 @@ development now targets Emacs 24.
 
         (add-hook 'malabar-mode-hook
              (lambda () 
-               (add-hook 'after-save-hook 'malabar-compile-file-silently
+               (add-hook 'after-save-hook 'malabar-http-compile-file-silently
                           nil t)))
           
 # Usage
@@ -143,12 +143,19 @@ Update:  malabar-mode now has a menu.  Yay!
 
 - unit testing a class or method
 
-Here is a list of available interactive commands, with default
-keybindings where applicable:
+### The 3 faces of malabar-mode
+
+The malabar minor mode has three different integrations: an interactive groovy shell (repl), a malabar HTTP server (http), and the external project manager like maven or gradle (pm).  Each of the integrations is managed seperately.  That is, compiling a file using the service will not load that class into the repl.  As such, the functions will be named so it is obvious which integration is used:  `malabar-repl-` , `malabar-http-`, or `malabar-pm-`
+
+Here is a list of available interactive commands by integration, with default keybindings where applicable:
+
+Unit Test
+
+
 
 <dl>
 
-<dt><b>malabar-run-test</b> <span class="classifier">(C-c C-v t)</span></dt>
+<dt><b>malabar-http-run-test</b> <span class="classifier">(C-c C-v t)</span></dt>
 <dd>Runs the unit tests in the current class.  With a prefix args, ask for a method name and only run that test</dd>
 
 <dt><b>semantic-ia-describe-class</b> <span class="classifier">(C-c C-v i)</span></dt>
@@ -182,16 +189,16 @@ keybindings where applicable:
 <dd>Visit the project file, that is the closest file named <code>pom.xml</code>
   searching upwards in the directory structure.</dd>
 
-<dt><b>malabar-groovy-send-buffer</b> <span class="classifier">(C-c C-v C-k)</span></dt>
-<dd>Send the contents of the current buffer to the running groovy instance.  If the buffer is a class rather than a script, prefer <code>malabar-mode-load-class</code></dd>
+<dt><b>malabar-repl-send-buffer</b> <span class="classifier">(C-c C-v C-k)</span></dt>
+<dd>Send the contents of the current buffer to the running groovy instance.  If the buffer is a class rather than a script, prefer <code>malabar-repl-mode-load-class</code></dd>
 
 <dt><b>malabar-stack-trace-buffer</b> <span class="classifier">(C-c C-v C-#)</span></dt>
 <dd>Create a new stack trace buffer and optional copy the current region into it.  A stack trace buffer parses the stack trace and allows jumping directly to the error in the source file.  The stack trace buffer will parse whatever stack trace is pasted into it</dd>
 
-<dt><b>malabar-groovy-send-classpath-of-buffer</b> <span class="classifier">(C-c C-v s)</span></dt>
-<dd>For use with <code>malabar-groovy-send-buffer</code> and <code>malabar-mode-load-class</code>, it loads the classpath of the current project into the running groovy buffer.  This allows for code in the current project to be used interactively.</dd>
+<dt><b>malabar-repl-send-classpath-of-buffer</b> <span class="classifier">(C-c C-v s)</span></dt>
+<dd>For use with <code>malabar-repl-send-buffer</code> and <code>malabar-repl-mode-load-class</code>, it loads the classpath of the current project into the running groovy buffer.  This allows for code in the current project to be used interactively.</dd>
 
-<dt><b>malabar-groovy-send-classpath-element</b> <span class="classifier">(C-c C-v s)</span></dt>
+<dt><b>malabar-repl-send-classpath-element</b> <span class="classifier">(C-c C-v s)</span></dt>
 <dd>Add a jar, zip or directory to the running groovy buffer</dd>
 
 <dt><b>malabar-jdb</b> <span class="classifier">(C-c C-v J)</span></dt>
@@ -226,7 +233,7 @@ The following are either not in 2.0 yet or are only partially working.  If you u
 
 <dl>
 
-<dt>malabar-compile-file <span class="classifier">(C-c C-v C-c)</span></dt>
+<dt>malabar-http-compile-file <span class="classifier">(C-c C-v C-c)</span></dt>
 <dd>Compiles the current file.</dd>
 
 <dt>malabar-clear-typecache</dt>
@@ -238,10 +245,10 @@ The following are either not in 2.0 yet or are only partially working.  If you u
   abstract methods and accessible constructors and inserts the
   appropriate extends clause.</dd>
   
-<dt>malabar-groovy-start</dt>
+<dt>malabar-repl-start</dt>
 <dd>Start the Groovy console, or pop to it if it is running.</dd>
 
-<dt>malabar-groovy-stop</dt>
+<dt>malabar-repl-stop</dt>
 <dd>Kill the Groovy console process.</dd>
   
 <dt>malabar-run-maven-command</dt>
@@ -270,7 +277,7 @@ The following are either not in 2.0 yet or are only partially working.  If you u
   same as where we started) and runs the now-current buffer as a
   standalone JUnit test.</dd>
   
-<dt>malabar-run-test <span class="classifier">(C-c C-v t)</span></dt>
+<dt>malabar-http-run-test <span class="classifier">(C-c C-v t)</span></dt>
 <dd>Runs the corresponding test to this buffer using Maven (<code>mvn test -Dtest=classname</code>)</dd>
 
 <dt>malabar-visit-corresponding-test</dt>
@@ -379,8 +386,8 @@ of malabar-mode with the following steps:
 
 1. Add the following to your `.emacs`:
 
-    (setq malabar-groovy-lib-dir "~/src/malabar-mode/target/lib")
-    (setq malabar-groovy-extra-classpath '("~/src/malabar-mode/target/classes"))
+    (setq malabar-repl-lib-dir "~/src/malabar-mode/target/lib")
+    (setq malabar-repl-extra-classpath '("~/src/malabar-mode/target/classes"))
     (add-to-list 'load-path "~/src/malabar-mode/src/main/lisp/")
 
 2. Run `mvn package -P devel` to extract libraries into
@@ -389,7 +396,7 @@ of malabar-mode with the following steps:
 With this configuration, you can rebuild malabar-mode's JVM
 component with `mvn compile`, which will compile classes into
 `target/classes`. To apply these changes, restart malabar-mode
-in Emacs with `M-x malabar-groovy-restart`.
+in Emacs with `M-x malabar-repl-restart`.
 
 After editing elisp files, eval them to apply changes
 immediately.

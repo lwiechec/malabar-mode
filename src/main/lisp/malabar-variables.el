@@ -55,7 +55,7 @@ keybindings.  Changing this variable is at your own risk."
       (define-key malabar-mode-map key malabar-command-map))
     (set-default variable key)))
 
-(defcustom malabar-server-jar-version "2.1.0"
+(defcustom malabar-server-jar-version "2.3.1"
   "The version of the malabar-mode-jar to fetch when starting"
   :group 'malabar
   :package-version '(malabar . "2.0")
@@ -80,26 +80,52 @@ keybindings.  Changing this variable is at your own risk."
   :package-version '(malabar . "2.0")
   :type 'string)
 
-(defcustom malabar-groovy-grooysh "~/.gvm/groovy/current/bin/groovysh"
+
+
+(defun malabar-groovysh-version-dir-> ( &rest files)
+  "Expect FILES to be a list of diretories with names like
+/a/fine/path/12.4.5.  Return non-nil if they are order largest to
+smallest"
+  (-all? (lambda (ls) (not (apply 'version-list-< ls)))
+	 (-partition-in-steps 2 1
+			      (-map 
+			       'version-to-list
+			       (--mapcat (last (split-string it "[/]")) files)))))
+
+(defun malabar-repl-groovysh-guess* ()
+  (let ((execs '("bin/groovysh" "bin/groovysh.bat"))
+	(version-dirs (sort  (directory-files "~/.gvm/groovy" t "[0-9]$") 'malabar-groovysh-version-dir->)))
+    (car
+     (-filter 'file-executable-p
+	      (-table-flat 'expand-file-name execs version-dirs)))))
+
+(defun malabar-repl-groovysh-guess ()
+  "On Windows the ~/.gvm/groovy/current might be a unfollowable symlink."
+  (let ((exec "~/.gvm/groovy/current/bin/groovysh"))
+    (if (file-executable-p (expand-file-name exec))
+	exec
+      (or (malabar-repl-groovysh-guess*) exec))))
+
+(defcustom malabar-repl-grooysh (malabar-repl-groovysh-guess)
   "Where to find the groovysh executable"
   :group 'malabar
   :package-version '(malabar . "2.0")
   :type 'string)
 
-(defcustom malabar-groovy-grooysh-debug nil
+(defcustom malabar-repl-grooysh-debug nil
   "If non-nil, turn on debugging of the groovysh"
   :group 'malabar
   :package-version '(malabar . "2.0")
   :type 'boolean)
 
-(defcustom malabar-groovy-proxy-host ""
-  "Proxy host for Groovy/Grape/Ivy to use to find dependencies.   Also see `malabar-groovy-proxy-port'"
+(defcustom malabar-repl-proxy-host ""
+  "Proxy host for Groovy/Grape/Ivy to use to find dependencies.   Also see `malabar-repl-proxy-port'"
   :group 'malabar
   :package-version '(malabar . "2.0")
   :type 'string)
 
-(defcustom malabar-groovy-proxy-port ""	
-  "Proxy port for Groovy/Grape/Ivy to use to find dependencies.  Also see `malabar-groovy-proxy-host'"
+(defcustom malabar-repl-proxy-port ""	
+  "Proxy port for Groovy/Grape/Ivy to use to find dependencies.  Also see `malabar-repl-proxy-host'"
   :group 'malabar
   :package-version '(malabar . "2.0")
   :type 'string)
@@ -188,15 +214,23 @@ See `malabar-electric-colon'."
   :type '(boolean))
 
 
+(defcustom malabar-known-project-managers '("maven" "gradle")
+  "A list of known project managers to pick from for
+`malabar-mode-project-manager'.  Adding an entry here does not
+magically make it happen.  This is used mostly for pick lists."
+  :group 'malabar
+  :type '(repeat (string :tag "Project Manager")))
+
 (defvar malabar-compilation-project-file nil)
 (defvar malabar-mode-project-dir nil)
 (defvar malabar-mode-project-file nil)
+(defvar malabar-mode-project-manager nil)
 (defvar malabar-mode-project-name nil)
 (defvar malabar-mode-project-parser "groovy")
 (defvar malabar-mode-project-service-alist nil
   "An alist of PM to a list of:
     ( PORT )" )
-(defvar malabar-groovy-compilation-buffer-name nil)
+(defvar malabar-repl-compilation-buffer-name nil)
 
 ;; 
 ;; External references

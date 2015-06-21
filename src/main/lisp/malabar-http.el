@@ -1,5 +1,5 @@
 ;; -*- lexical-binding: t -*-
-;;; malabar-service.el --- Project handling for malabar-mode
+;;; malabar-http.el --- Project handling for malabar-mode
 ;;
 ;; Copyright (c) 2009, 2010 Espen Wiborg <espenhw@grumblesmurf.org>
 ;;
@@ -35,18 +35,18 @@
 
 (defvar url-http-end-of-headers)
 
-(defun malabar-service-arg-p  (c)
+(defun malabar-http-arg-p  (c)
   "Return non-nil if the car and cadr of c are not nil"
   (and (not (null (car c))) 
        (not (null (cadr c)))))
 
-(defun malabar-service-prepare-args (args-plist)
-  (let ((args-alist (-filter #'malabar-service-arg-p (-partition-all 2 args-plist))))
+(defun malabar-http-prepare-args (args-plist)
+  (let ((args-alist (-filter #'malabar-http-arg-p (-partition-all 2 args-plist))))
     (if (assoc "pm" args-alist) args-alist 
       (append args-alist `(("pm" ,malabar-mode-project-file))))))
 
 ;;;###autoload
-(defun malabar-service-call (service args-plist &optional buffer array-type object-type readtable)
+(defun malabar-http-call (service args-plist &optional buffer array-type object-type readtable)
   "SERVICE is a known service to the malabat server 
 
    ARGS-PLIST is a list of '(key val key val ...). If pm is not
@@ -66,7 +66,7 @@
 	url-request-data nil)
   
   (with-current-buffer (or buffer (current-buffer))
-    (let* ((args-alist (malabar-service-prepare-args args-plist))
+    (let* ((args-alist (malabar-http-prepare-args args-plist))
 	   (args (mapconcat (lambda (c) (concat (car c) "=" (cadr c))) args-alist "&"))
 	   (url (format "http://%s:%s/%s/?%s"
 			malabar-server-host
@@ -89,6 +89,6 @@
 
 
 
-(provide 'malabar-service)
+(provide 'malabar-http)
 
-;;; malabar-service ends here
+;;; malabar-http ends here

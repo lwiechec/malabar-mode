@@ -97,7 +97,7 @@ malabar-mode should work fine with the embedded CEDET.
                                           global-semantic-mru-bookmark-mode))
         (semantic-mode 1)
         (require 'malabar-mode)
-        (setq malabar-groovy-lib-dir "/path/to/malabar/lib")
+        (setq malabar-repl-lib-dir "/path/to/malabar/lib")
         (add-to-list 'auto-mode-alist '("\\.java\\'" . malabar-mode))
 
 2. (optional) If you want to mimic the IDEish compile-on-save
@@ -105,7 +105,7 @@ malabar-mode should work fine with the embedded CEDET.
 
         (add-hook 'malabar-mode-hook
              (lambda () 
-               (add-hook 'after-save-hook 'malabar-compile-file-silently
+               (add-hook 'after-save-hook 'malabar-http-compile-file-silently
                           nil t)))
           
 # Usage
@@ -116,7 +116,7 @@ Here is a list of available interactive commands, with default
 keybindings where applicable:
 
 <dl>
-<dt>malabar-compile-file <span class="classifier">(C-c C-v C-c)</span></dt>
+<dt>malabar-http-compile-file <span class="classifier">(C-c C-v C-c)</span></dt>
 <dd>Compiles the current file.</dd>
 
 <dt>malabar-clear-typecache</dt>
@@ -128,10 +128,10 @@ keybindings where applicable:
   abstract methods and accessible constructors and inserts the
   appropriate extends clause.</dd>
   
-<dt>malabar-groovy-start</dt>
+<dt>malabar-repl-start</dt>
 <dd>Start the Groovy console, or pop to it if it is running.</dd>
 
-<dt>malabar-groovy-stop</dt>
+<dt>malabar-repl-stop</dt>
 <dd>Kill the Groovy console process.</dd>
 
 <dt>malabar-implement-interface <span class="classifier">(C-c C-v C-i)</span></dt>
@@ -180,7 +180,7 @@ keybindings where applicable:
   same as where we started) and runs the now-current buffer as a
   standalone JUnit test.</dd>
   
-<dt>malabar-run-test <span class="classifier">(C-c C-v t)</span></dt>
+<dt>malabar-http-run-test <span class="classifier">(C-c C-v t)</span></dt>
 <dd>Runs the corresponding test to this buffer using Maven (<code>mvn test -Dtest=classname</code>)</dd>
 
 <dt>malabar-update-package</dt>
@@ -304,8 +304,8 @@ of malabar-mode with the following steps:
 
 1. Add the following to your `.emacs`:
 
-    (setq malabar-groovy-lib-dir "~/src/malabar-mode/target/lib")
-    (setq malabar-groovy-extra-classpath '("~/src/malabar-mode/target/classes"))
+    (setq malabar-repl-lib-dir "~/src/malabar-mode/target/lib")
+    (setq malabar-repl-extra-classpath '("~/src/malabar-mode/target/classes"))
     (add-to-list 'load-path "~/src/malabar-mode/src/main/lisp/")
 
 2. Run `mvn package -P devel` to extract libraries into
@@ -314,7 +314,7 @@ of malabar-mode with the following steps:
 With this configuration, you can rebuild malabar-mode's JVM
 component with `mvn compile`, which will compile classes into
 `target/classes`. To apply these changes, restart malabar-mode
-in Emacs with `M-x malabar-groovy-restart`.
+in Emacs with `M-x malabar-repl-restart`.
 
 After editing elisp files, eval them to apply changes
 immediately.
